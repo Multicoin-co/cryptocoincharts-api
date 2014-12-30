@@ -8,17 +8,15 @@ Created on 24.01.2014
 
 '''
 
-from urllib2 import Request, urlopen, URLError, HTTPError
-from urllib import urlencode
+import requests
 from Models import Coin, TradingPair
-import json
 
 class API(object):
     '''
     This class is a wrapper class for the CryptoCoinCharts api.
     '''
     
-    API_PATH = "http://www.cryptocoincharts.info/v2/api/"
+    API_PATH = "http://api.cryptocoincharts.info/"
         
     def listcoins(self):
         '''
@@ -27,7 +25,7 @@ class API(object):
         '''
         url = self.API_PATH + 'listCoins'
         
-        json_data = json.loads(self._getdata(url))
+        json_data = requests.get(url).json()
         
         coins = []
         for entry in json_data:
@@ -50,7 +48,7 @@ class API(object):
         '''
         url = self.API_PATH + 'tradingPair/' + pair
         
-        json_data = json.loads(self._getdata(url))
+        json_data = requests.get(url).json()
         
         tradingpair = TradingPair()
         tradingpair.id = json_data['id']
@@ -75,7 +73,7 @@ class API(object):
         url = self.API_PATH + 'tradingPairs/'
         data = { 'pairs':pairs }
         
-        json_data = json.loads(self._getdata(url, data))
+	json_data = requests.get(url, params=data).json()
         
         tradingpairs = []
         for entry in json_data:
@@ -95,24 +93,3 @@ class API(object):
     def listofpairs(self):
         pass
     
-    def _getdata(self, url, data = ""):
-        '''
-        Wrapper method
-        '''
-        request = Request(url)
-        
-        if data != "":
-            request = Request(url, urlencode(data))
-            
-        try:
-            response = urlopen(request)
-        except HTTPError as e:
-            print 'The Server couldn\'t fulfill the request.'
-            print 'Error code: ', e.code
-        except URLError as e:
-            print 'We failed to reach a server.'
-            print 'Reason: ', e.code
-        else:
-            # Everything is fine.
-            return response.read()
-            
